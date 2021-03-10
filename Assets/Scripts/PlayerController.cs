@@ -9,12 +9,16 @@ public class PlayerController : MonoBehaviour
     public float mouseSensitivity = 90f;
     public float playerSpeed = 10f;
     public float jumpForce = 10f;
+    public Animator anim;
+    public Animator weaponAnim;
 
     private Vector3 targetPosition;
     private float rotationOnX;
     private bool isJumping;
     private Vector3 prevoiusMousePosition;
+    private Vector3 prevoiusPlayerPosition;
     private float z = 0;
+    private bool isWalking = false;
 
     // Start is called before the first frame update
     void Start()
@@ -34,18 +38,25 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKey(KeyCode.W))
         {
             PlayerMoveForward();
+            isWalking = true;
         }
         if (Input.GetKey(KeyCode.S))
         {
             PlayerMoveBackward();
+            isWalking = true;
+
         }
         if (Input.GetKey(KeyCode.D))
         {
             PlayerMoveRight();
+            isWalking = true;
+
         }
         if (Input.GetKey(KeyCode.A))
         {
             PlayerMoveLeft();
+            isWalking = true;
+
         }
         if (Input.GetKey(KeyCode.Space) && !isJumping)
         {
@@ -56,7 +67,15 @@ public class PlayerController : MonoBehaviour
         {
             getTargetPosition();
         }
-        moveCameraWhileWalking();
+
+        if (PlayerRB.transform.position==prevoiusPlayerPosition)
+        {
+            isWalking = false;
+        }
+        prevoiusPlayerPosition = PlayerRB.transform.position;
+        anim.SetBool("isWalking", isWalking);
+        weaponAnim.SetBool("isWalking", isWalking);
+
     }
 
 
@@ -116,50 +135,17 @@ public class PlayerController : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         isJumping = false;
         prevoiusMousePosition = Input.mousePosition;
+        prevoiusPlayerPosition = PlayerRB.transform.position;
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.transform.position.y<transform.position.y)
+        if (collision.gameObject.tag=="ground")
         {
             isJumping = false;
+
         }
+
     }
 
-    private void moveCameraWhileWalking()
-    {
-        float min = -1f;
-        float max = 1f;
-        bool up = true;
-        bool down = false;
-
-
-        if (up)
-        {
-            if (z<=max)
-            {
-                z = z + 0.01f;
-            }
-            else
-            {
-                up = false;
-                down = true;
-            }
-        }
-        if (down)
-        {
-            if (z>=min)
-            {
-                z = z - 0.01f;
-
-            }
-            else
-            {
-                up=true;
-                down=false;
-            }
-        }
-        Debug.Log(z);
-        PlayerCamera.transform.localRotation = new Quaternion(PlayerCamera.transform.localRotation.x, 0, PlayerCamera.transform.localRotation.z+z, PlayerCamera.transform.localRotation.w);
-    }
 }
